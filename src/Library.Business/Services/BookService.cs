@@ -44,6 +44,7 @@ public class BookService : IBookService
             ISBN = dto.ISBN.Trim(),
             PublishYear = dto.PublishYear,
             Description = dto.Description?.Trim() ?? string.Empty,
+            CoverImageUrl = NormalizeCoverUrl(dto.CoverImageUrl),
             CategoryId = dto.CategoryId,
             PublisherId = dto.PublisherId
         };
@@ -72,6 +73,7 @@ public class BookService : IBookService
         book.ISBN = dto.ISBN.Trim();
         book.PublishYear = dto.PublishYear;
         book.Description = dto.Description?.Trim() ?? string.Empty;
+        book.CoverImageUrl = NormalizeCoverUrl(dto.CoverImageUrl);
         book.CategoryId = dto.CategoryId;
         book.PublisherId = dto.PublisherId;
 
@@ -161,5 +163,12 @@ public class BookService : IBookService
         _uow.BookCopies.Update(copy);
         await _uow.SaveChangesAsync(cancellationToken);
         return ServiceResult<BookCopy>.Ok(copy);
+    }
+
+    private static string? NormalizeCoverUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return null;
+        return url.Trim();
     }
 }

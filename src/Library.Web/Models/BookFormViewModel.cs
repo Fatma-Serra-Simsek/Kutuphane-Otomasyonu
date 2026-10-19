@@ -24,6 +24,10 @@ public class BookFormViewModel
     [StringLength(4000)]
     public string Description { get; set; } = string.Empty;
 
+    [Display(Name = "Kapak görseli URL")]
+    [StringLength(500)]
+    public string? CoverImageUrl { get; set; }
+
     [Display(Name = "Kategori")]
     [Range(1, int.MaxValue, ErrorMessage = "Kategori seçin.")]
     public int CategoryId { get; set; }

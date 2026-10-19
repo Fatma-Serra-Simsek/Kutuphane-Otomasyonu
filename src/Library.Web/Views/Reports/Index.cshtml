@@ -1,11 +1,13 @@
 @{
     ViewData["Title"] = "Raporlar";
+    ViewData["PageSubtitle"] = "Görüntüle veya CSV olarak indir";
 }
 
-<h1 class="h3 mb-3">Raporlar</h1>
-<p class="text-muted">Her raporu görüntüleyebilir veya CSV olarak indirebilirsiniz.</p>
+<div class="page-header">
+    <partial name="_PageHeader" />
+</div>
 
-<div class="list-group">
+<div class="list-group surface-card overflow-hidden">
     <a class="list-group-item list-group-item-action" asp-action="MostBorrowed">En çok ödünç alınan kitaplar</a>
     <a class="list-group-item list-group-item-action" asp-action="TopMembers">En çok kitap alan üyeler</a>
     <a class="list-group-item list-group-item-action" asp-action="ActiveLoans">Ödünçteki kitaplar</a>

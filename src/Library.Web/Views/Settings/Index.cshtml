@@ -1,20 +1,25 @@
 @model SettingsViewModel
 @{
     ViewData["Title"] = "Ayarlar";
+    ViewData["PageSubtitle"] = "Sistem tercihleri";
 }
 
-<h1 class="h3 mb-3">Ayarlar</h1>
-<p class="text-muted">Personel hesap yönetimi sonraki fazda eklenecek.</p>
+<div class="page-header">
+    <partial name="_PageHeader" />
+</div>
 
-<form method="post" class="col-md-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-    <div class="mb-3">
-        <label asp-for="LoanPeriodDays" class="form-label"></label>
-        <input asp-for="LoanPeriodDays" class="form-control" />
-        <span asp-validation-for="LoanPeriodDays" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-</form>
+<div class="form-panel">
+    <p class="text-muted">Personel hesap yönetimi sonraki fazda eklenecek.</p>
+    <form method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div class="mb-3">
+            <label asp-for="LoanPeriodDays" class="form-label"></label>
+            <input asp-for="LoanPeriodDays" class="form-control" />
+            <span asp-validation-for="LoanPeriodDays" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

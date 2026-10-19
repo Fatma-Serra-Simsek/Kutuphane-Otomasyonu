@@ -1,10 +1,16 @@
 @model BookFormViewModel
 @{
     ViewData["Title"] = "Kitap ekle";
+    ViewData["PageSubtitle"] = "Kataloga yeni eser kaydı";
 }
 
-<h1 class="h3 mb-3">Kitap ekle</h1>
-<partial name="_BookForm" model="Model" />
+<div class="page-header">
+    <partial name="_PageHeader" />
+</div>
+
+<div class="form-panel">
+    <partial name="_BookForm" model="Model" />
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

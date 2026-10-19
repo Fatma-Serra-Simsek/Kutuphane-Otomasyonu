@@ -1,40 +1,45 @@
 @model IReadOnlyList<Library.Domain.Entities.Loan>
 @{
     ViewData["Title"] = "Gecikmişler";
+    ViewData["PageSubtitle"] = "Teslim tarihi geçmiş ödünçler";
 }
 
-<h1 class="h3 mb-3">Gecikmiş ödünçler</h1>
+<div class="page-header">
+    <partial name="_PageHeader" />
+</div>
 
 @if (Model.Count == 0)
 {
-    <p class="text-muted">Gecikmiş ödünç yok.</p>
+    <div class="empty-state">Gecikmiş ödünç yok.</div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Üye</th>
-                    <th>Kitap</th>
-                    <th>Barkod</th>
-                    <th>Teslim tarihi</th>
-                    <th>Gecikme</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var loan in Model)
-            {
-                var days = (DateTime.Today - loan.DueDate.Date).Days;
-                <tr>
-                    <td>@loan.Member?.FullName</td>
-                    <td>@loan.BookCopy?.Book?.Title</td>
-                    <td>@loan.BookCopy?.Barcode</td>
-                    <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
-                    <td><span class="badge text-bg-danger">@days gün</span></td>
-                </tr>
-            }
-            </tbody>
-        </table>
+    <div class="table-panel">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Üye</th>
+                        <th>Kitap</th>
+                        <th>Barkod</th>
+                        <th>Teslim tarihi</th>
+                        <th>Gecikme</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var loan in Model)
+                {
+                    var days = (DateTime.Today - loan.DueDate.Date).Days;
+                    <tr>
+                        <td>@loan.Member?.FullName</td>
+                        <td>@loan.BookCopy?.Book?.Title</td>
+                        <td>@loan.BookCopy?.Barcode</td>
+                        <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
+                        <td><span class="badge text-bg-danger">@days gün</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 }

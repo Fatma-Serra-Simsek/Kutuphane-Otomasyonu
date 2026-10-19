@@ -1,0 +1,15 @@
+@model BookCoverViewModel
+@{
+    var hasUrl = !string.IsNullOrWhiteSpace(Model.Url);
+}
+<div class="@Model.CssClass">
+    @if (hasUrl)
+    {
+        <img src="@Model.Url" alt="@Model.Title kapağı" loading="lazy" data-cover-fallback="1" />
+        <div class="book-cover-placeholder" hidden>@Model.Title</div>
+    }
+    else
+    {
+        <div class="book-cover-placeholder">@Model.Title</div>
+    }
+</div>

@@ -61,6 +61,7 @@ public class BooksController : Controller
             ISBN = model.ISBN,
             PublishYear = model.PublishYear,
             Description = model.Description,
+            CoverImageUrl = model.CoverImageUrl,
             CategoryId = model.CategoryId,
             PublisherId = model.PublisherId,
             AuthorIds = model.AuthorIds
@@ -91,6 +92,7 @@ public class BooksController : Controller
             ISBN = book.ISBN,
             PublishYear = book.PublishYear,
             Description = book.Description,
+            CoverImageUrl = book.CoverImageUrl,
             CategoryId = book.CategoryId,
             PublisherId = book.PublisherId,
             AuthorIds = book.BookAuthors.Select(ba => ba.AuthorId).ToList()
@@ -119,6 +121,7 @@ public class BooksController : Controller
             ISBN = model.ISBN,
             PublishYear = model.PublishYear,
             Description = model.Description,
+            CoverImageUrl = model.CoverImageUrl,
             CategoryId = model.CategoryId,
             PublisherId = model.PublisherId,
             AuthorIds = model.AuthorIds

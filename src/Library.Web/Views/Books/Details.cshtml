@@ -3,17 +3,15 @@
 @{
     ViewData["Title"] = Model.Title;
     var copies = Model.Copies.Where(c => !c.IsDeleted).ToList();
+    var authors = string.Join(", ", Model.BookAuthors.Select(ba => ba.Author.FullName));
 }
 
-<div class="d-flex justify-content-between align-items-start mb-3">
+<div class="page-header">
     <div>
-        <h1 class="h3 mb-1">@Model.Title</h1>
-        <p class="text-muted mb-0">
-            @string.Join(", ", Model.BookAuthors.Select(ba => ba.Author.FullName))
-            · @Model.Category?.Name · @Model.Publisher?.Name · @Model.PublishYear
-        </p>
+        <h1 class="page-title">@Model.Title</h1>
+        <p class="page-subtitle">@authors · @Model.Category?.Name · @Model.Publisher?.Name · @Model.PublishYear</p>
     </div>
-    <div>
+    <div class="page-header-actions d-flex gap-2">
         <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Id">Düzenle</a>
         <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline"
               onsubmit="return confirm('Kitabı pasife almak istiyor musunuz?');">
@@ -23,89 +21,97 @@
     </div>
 </div>
 
-@if (!string.IsNullOrWhiteSpace(Model.Description))
-{
-    <p>@Model.Description</p>
-}
+<div class="book-detail mb-4">
+    <div class="book-detail-cover">
+        <partial name="_BookCover" model="new BookCoverViewModel { Url = Model.CoverImageUrl, Title = Model.Title }" />
+    </div>
+    <div class="surface-card p-4">
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="mb-3">@Model.Description</p>
+        }
+        <p class="mb-0 d-flex flex-wrap gap-2 align-items-center">
+            <span class="badge text-bg-success">@Model.GetAvailableCopyCount() müsait</span>
+            <span class="badge text-bg-secondary">@copies.Count toplam kopya</span>
+            <span class="text-muted">ISBN: @Model.ISBN</span>
+        </p>
+    </div>
+</div>
 
-<p>
-    <span class="badge text-bg-success">@Model.GetAvailableCopyCount() müsait</span>
-    <span class="badge text-bg-secondary">@copies.Count toplam kopya</span>
-    <span class="text-muted">ISBN: @Model.ISBN</span>
-</p>
-
-<h2 class="h5 mt-4">Kopyalar</h2>
-@if (copies.Count == 0)
-{
-    <p class="text-muted">Henüz kopya yok.</p>
-}
-else
-{
-    <div class="table-responsive mb-3">
-        <table class="table table-sm align-middle">
-            <thead>
-                <tr>
-                    <th>Barkod</th>
-                    <th>Durum</th>
-                    <th>Durum değiştir</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var copy in copies)
-            {
-                <tr>
-                    <td>@copy.Barcode</td>
-                    <td>
-                        @switch (copy.Status)
-                        {
-                            case CopyStatus.Available:
-                                <span class="badge text-bg-success">Müsait</span>
-                                break;
-                            case CopyStatus.Loaned:
-                                <span class="badge text-bg-primary">Ödünçte</span>
-                                break;
-                            case CopyStatus.Damaged:
-                                <span class="badge text-bg-warning">Hasarlı</span>
-                                break;
-                            case CopyStatus.Lost:
-                                <span class="badge text-bg-danger">Kayıp</span>
-                                break;
-                        }
-                    </td>
-                    <td>
-                        <form asp-action="ChangeCopyStatus" method="post" class="d-flex gap-2">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="bookId" value="@Model.Id" />
-                            <input type="hidden" name="copyId" value="@copy.Id" />
-                            <select name="status" class="form-select form-select-sm" style="max-width: 10rem;">
-                                @foreach (CopyStatus s in Enum.GetValues(typeof(CopyStatus)))
-                                {
-                                    if (s != copy.Status)
+<div class="surface-card p-4 mb-3">
+    <h2 class="h5 mb-3">Kopyalar</h2>
+    @if (copies.Count == 0)
+    {
+        <p class="text-muted mb-0">Henüz kopya yok.</p>
+    }
+    else
+    {
+        <div class="table-responsive mb-3">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Barkod</th>
+                        <th>Durum</th>
+                        <th>Durum değiştir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var copy in copies)
+                {
+                    <tr>
+                        <td>@copy.Barcode</td>
+                        <td>
+                            @switch (copy.Status)
+                            {
+                                case CopyStatus.Available:
+                                    <span class="badge text-bg-success">Müsait</span>
+                                    break;
+                                case CopyStatus.Loaned:
+                                    <span class="badge text-bg-primary">Ödünçte</span>
+                                    break;
+                                case CopyStatus.Damaged:
+                                    <span class="badge text-bg-warning">Hasarlı</span>
+                                    break;
+                                case CopyStatus.Lost:
+                                    <span class="badge text-bg-danger">Kayıp</span>
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            <form asp-action="ChangeCopyStatus" method="post" class="d-flex gap-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="bookId" value="@Model.Id" />
+                                <input type="hidden" name="copyId" value="@copy.Id" />
+                                <select name="status" class="form-select form-select-sm" style="max-width: 10rem;">
+                                    @foreach (CopyStatus s in Enum.GetValues(typeof(CopyStatus)))
                                     {
-                                        <option value="@s">@s</option>
+                                        if (s != copy.Status)
+                                        {
+                                            <option value="@s">@s</option>
+                                        }
                                     }
-                                }
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Uygula</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Uygula</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
 
-<form asp-action="AddCopy" method="post" class="row g-2 align-items-end">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="bookId" value="@Model.Id" />
-    <div class="col-md-4">
-        <label class="form-label">Yeni kopya barkodu</label>
-        <input class="form-control" name="barcode" required maxlength="64" autofocus />
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-primary w-100">Kopya ekle</button>
-    </div>
-</form>
+    <form asp-action="AddCopy" method="post" class="row g-2 align-items-end">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="bookId" value="@Model.Id" />
+        <div class="col-md-4">
+            <label class="form-label">Yeni kopya barkodu</label>
+            <input class="form-control" name="barcode" required maxlength="64" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Kopya ekle</button>
+        </div>
+    </form>
+</div>
 
-<p class="mt-3"><a asp-action="Index">Listeye dön</a></p>
+<p class="mb-0"><a asp-action="Index" class="btn btn-outline-secondary btn-sm">Listeye dön</a></p>

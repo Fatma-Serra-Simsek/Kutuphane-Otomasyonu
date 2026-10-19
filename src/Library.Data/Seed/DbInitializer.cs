@@ -28,7 +28,7 @@ public static class DbInitializer
 
         if (!await db.Settings.AnyAsync())
         {
-            await SeedCatalogAsync(db);
+            await SeedCatalogAsync(db, logger);
             logger.LogInformation("Catalog seed completed.");
         }
         else
@@ -36,6 +36,7 @@ public static class DbInitializer
             logger.LogInformation("Catalog seed skipped; database already has data.");
         }
 
+        await EnsureDemoCatalogAsync(db, logger);
         await EnsureIdentityAsync(sp, db, logger);
 
         logger.LogInformation(
@@ -44,76 +45,9 @@ public static class DbInitializer
             LibrarianEmail);
     }
 
-    private static async Task SeedCatalogAsync(LibraryDbContext db)
+    private static async Task SeedCatalogAsync(LibraryDbContext db, ILogger logger)
     {
         db.Settings.Add(new Setting { Key = "LoanPeriodDays", Value = "14" });
-
-        var categories = new[]
-        {
-            new Category { Name = "Roman" },
-            new Category { Name = "Bilim" },
-            new Category { Name = "Tarih" }
-        };
-        db.Categories.AddRange(categories);
-
-        var publishers = new[]
-        {
-            new Publisher { Name = "Yapı Kredi Yayınları" },
-            new Publisher { Name = "Tübitak Yayınları" }
-        };
-        db.Publishers.AddRange(publishers);
-
-        var authors = new[]
-        {
-            new Author { FullName = "Orhan Pamuk" },
-            new Author { FullName = "Aziz Sancar" },
-            new Author { FullName = "İlber Ortaylı" }
-        };
-        db.Authors.AddRange(authors);
-
-        await db.SaveChangesAsync();
-
-        var book1 = new Book
-        {
-            Title = "Masumiyet Müzesi",
-            ISBN = "9789750804557",
-            PublishYear = 2008,
-            Description = "İstanbul'da geçen bir aşk romanı.",
-            CategoryId = categories[0].Id,
-            PublisherId = publishers[0].Id
-        };
-        var book2 = new Book
-        {
-            Title = "Yaşamın Sırrı DNA",
-            ISBN = "9789754031234",
-            PublishYear = 2015,
-            Description = "DNA ve genetik üzerine giriş.",
-            CategoryId = categories[1].Id,
-            PublisherId = publishers[1].Id
-        };
-        var book3 = new Book
-        {
-            Title = "Osmanlı'yı Yeniden Keşfetmek",
-            ISBN = "9789750809999",
-            PublishYear = 2010,
-            Description = "Osmanlı tarihi denemeleri.",
-            CategoryId = categories[2].Id,
-            PublisherId = publishers[0].Id
-        };
-
-        db.Books.AddRange(book1, book2, book3);
-        await db.SaveChangesAsync();
-
-        db.BookAuthors.AddRange(
-            new BookAuthor { BookId = book1.Id, AuthorId = authors[0].Id },
-            new BookAuthor { BookId = book2.Id, AuthorId = authors[1].Id },
-            new BookAuthor { BookId = book3.Id, AuthorId = authors[2].Id });
-
-        db.BookCopies.AddRange(
-            new BookCopy { BookId = book1.Id, Barcode = "BC-0001", Status = CopyStatus.Available },
-            new BookCopy { BookId = book1.Id, Barcode = "BC-0002", Status = CopyStatus.Available },
-            new BookCopy { BookId = book2.Id, Barcode = "BC-0003", Status = CopyStatus.Available },
-            new BookCopy { BookId = book3.Id, Barcode = "BC-0004", Status = CopyStatus.Available });
 
         db.Members.Add(new Member
         {
@@ -140,6 +74,161 @@ public static class DbInitializer
         });
 
         await db.SaveChangesAsync();
+        await EnsureDemoCatalogAsync(db, logger);
+    }
+
+    /// <summary>
+    /// Idempotent: eksik kategori/yayınevi/yazar/kitapları ISBN'e göre tamamlar.
+    /// Mevcut Development DB'lerinde de 50+ kapaklı kitabı garanti eder.
+    /// </summary>
+    public static async Task EnsureDemoCatalogAsync(LibraryDbContext db, ILogger logger)
+    {
+        var categories = await EnsureNamedEntitiesAsync(
+            db,
+            db.Categories,
+            SeedCatalogData.Categories
+                .Concat(SeedCatalogData.Books.Select(b => b.Category))
+                .Distinct(StringComparer.OrdinalIgnoreCase),
+            name => new Category { Name = name },
+            c => c.Name);
+
+        var publishers = await EnsureNamedEntitiesAsync(
+            db,
+            db.Publishers,
+            SeedCatalogData.Publishers
+                .Concat(SeedCatalogData.Books.Select(b => b.Publisher))
+                .Distinct(StringComparer.OrdinalIgnoreCase),
+            name => new Publisher { Name = name },
+            p => p.Name);
+
+        var authors = await EnsureNamedEntitiesAsync(
+            db,
+            db.Authors,
+            SeedCatalogData.Books.Select(b => b.Author).Distinct(StringComparer.OrdinalIgnoreCase),
+            name => new Author { FullName = name },
+            a => a.FullName);
+
+        var existingByIsbn = await db.Books
+            .IgnoreQueryFilters()
+            .ToDictionaryAsync(b => b.ISBN, StringComparer.OrdinalIgnoreCase);
+
+        var nextBarcode = await NextBarcodeNumberAsync(db);
+        var added = 0;
+        var coversUpdated = 0;
+
+        foreach (var def in SeedCatalogData.Books)
+        {
+            if (existingByIsbn.TryGetValue(def.Isbn, out var existing))
+            {
+                if (string.IsNullOrWhiteSpace(existing.CoverImageUrl))
+                {
+                    existing.CoverImageUrl = SeedCatalogData.CoverUrl(def.Isbn);
+                    coversUpdated++;
+                }
+
+                continue;
+            }
+
+            if (!categories.TryGetValue(def.Category, out var category) ||
+                !publishers.TryGetValue(def.Publisher, out var publisher) ||
+                !authors.TryGetValue(def.Author, out var author))
+            {
+                continue;
+            }
+
+            var book = new Book
+            {
+                Title = def.Title,
+                ISBN = def.Isbn,
+                PublishYear = def.PublishYear,
+                Description = def.Description,
+                CoverImageUrl = SeedCatalogData.CoverUrl(def.Isbn),
+                CategoryId = category.Id,
+                PublisherId = publisher.Id
+            };
+            book.BookAuthors.Add(new BookAuthor { Author = author });
+            book.Copies.Add(new BookCopy
+            {
+                Barcode = $"BC-{nextBarcode:D4}",
+                Status = CopyStatus.Available
+            });
+            nextBarcode++;
+
+            db.Books.Add(book);
+            existingByIsbn[def.Isbn] = book;
+            added++;
+        }
+
+        var missingCovers = await db.Books
+            .Where(b => b.CoverImageUrl == null || b.CoverImageUrl == "")
+            .ToListAsync();
+        foreach (var book in missingCovers)
+        {
+            if (string.IsNullOrWhiteSpace(book.ISBN))
+                continue;
+            book.CoverImageUrl = SeedCatalogData.CoverUrl(book.ISBN);
+            coversUpdated++;
+        }
+
+        if (added > 0 || coversUpdated > 0)
+            await db.SaveChangesAsync();
+
+        var total = await db.Books.CountAsync();
+        logger.LogInformation(
+            "Demo catalog ensured. Added {Added} books, updated {Covers} covers. Total books: {Total}.",
+            added,
+            coversUpdated,
+            total);
+    }
+
+    private static async Task<Dictionary<string, T>> EnsureNamedEntitiesAsync<T>(
+        LibraryDbContext db,
+        DbSet<T> set,
+        IEnumerable<string> names,
+        Func<string, T> factory,
+        Func<T, string> nameSelector)
+        where T : class
+    {
+        var existing = await set.ToListAsync();
+        var map = existing.ToDictionary(nameSelector, StringComparer.OrdinalIgnoreCase);
+        var created = false;
+
+        foreach (var name in names)
+        {
+            if (map.ContainsKey(name))
+                continue;
+
+            var entity = factory(name);
+            set.Add(entity);
+            map[name] = entity;
+            created = true;
+        }
+
+        if (created)
+            await db.SaveChangesAsync();
+
+        return map;
+    }
+
+    private static async Task<int> NextBarcodeNumberAsync(LibraryDbContext db)
+    {
+        var barcodes = await db.BookCopies
+            .IgnoreQueryFilters()
+            .Select(c => c.Barcode)
+            .ToListAsync();
+
+        var max = 0;
+        foreach (var barcode in barcodes)
+        {
+            if (barcode.StartsWith("BC-", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(barcode.AsSpan(3), out var n) &&
+                n > max)
+            {
+                max = n;
+            }
+        }
+
+        return max + 1;
     }
 
     private static async Task EnsureIdentityAsync(

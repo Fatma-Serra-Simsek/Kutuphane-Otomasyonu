@@ -1,100 +1,91 @@
 ﻿@model DashboardViewModel
 @{
     ViewData["Title"] = "Ana panel";
+    ViewData["PageSubtitle"] = "Güncel özet ve son işlemler";
 }
 
-<h1 class="h3 mb-4">Ana panel</h1>
+<div class="page-header">
+    <partial name="_PageHeader" />
+</div>
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-        <a asp-controller="Books" asp-action="Index" class="text-decoration-none text-dark">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Toplam kitap</div>
-                    <div class="fs-3 fw-semibold">@Model.Summary.TotalBooks</div>
-                </div>
-            </div>
+        <a asp-controller="Books" asp-action="Index" class="kpi-card">
+            <div class="kpi-label">Toplam kitap</div>
+            <div class="kpi-value">@Model.Summary.TotalBooks</div>
         </a>
     </div>
     <div class="col-6 col-md-3">
-        <a asp-controller="Members" asp-action="Index" class="text-decoration-none text-dark">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Aktif üye</div>
-                    <div class="fs-3 fw-semibold">@Model.Summary.ActiveMembers</div>
-                </div>
-            </div>
+        <a asp-controller="Members" asp-action="Index" class="kpi-card">
+            <div class="kpi-label">Aktif üye</div>
+            <div class="kpi-value">@Model.Summary.ActiveMembers</div>
         </a>
     </div>
     <div class="col-6 col-md-3">
-        <a asp-controller="Loans" asp-action="Active" class="text-decoration-none text-dark">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Ödünçteki</div>
-                    <div class="fs-3 fw-semibold">@Model.Summary.ActiveLoans</div>
-                </div>
-            </div>
+        <a asp-controller="Loans" asp-action="Active" class="kpi-card">
+            <div class="kpi-label">Ödünçteki</div>
+            <div class="kpi-value">@Model.Summary.ActiveLoans</div>
         </a>
     </div>
     <div class="col-6 col-md-3">
-        <a asp-controller="Loans" asp-action="Overdue" class="text-decoration-none text-dark">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Gecikmiş</div>
-                    <div class="fs-3 fw-semibold">@Model.Summary.OverdueLoans</div>
-                </div>
-            </div>
+        <a asp-controller="Loans" asp-action="Overdue" class="kpi-card kpi-alert">
+            <div class="kpi-label">Gecikmiş</div>
+            <div class="kpi-value">@Model.Summary.OverdueLoans</div>
         </a>
     </div>
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-2">
-    <h2 class="h5 mb-0">Son ödünç işlemleri</h2>
+<div class="page-header mb-3">
+    <div>
+        <h2 class="h5 mb-0" style="font-family: var(--lib-font-display);">Son ödünç işlemleri</h2>
+    </div>
     <a class="btn btn-sm btn-outline-danger" asp-controller="Loans" asp-action="Overdue">Gecikmişlere git</a>
 </div>
 
 @if (Model.RecentLoans.Count == 0)
 {
-    <p class="text-muted">Henüz ödünç işlemi yok.</p>
+    <div class="empty-state">Henüz ödünç işlemi yok.</div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-sm table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Tarih</th>
-                    <th>Üye</th>
-                    <th>Kitap / barkod</th>
-                    <th>Teslim</th>
-                    <th>Durum</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var loan in Model.RecentLoans)
-            {
-                <tr>
-                    <td>@loan.LoanDate.ToString("dd.MM.yyyy")</td>
-                    <td>@loan.MemberName</td>
-                    <td>@loan.BookTitle <span class="text-muted">(@loan.Barcode)</span></td>
-                    <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
-                    <td>
-                        @if (loan.ReturnDate is not null)
-                        {
-                            <span class="badge text-bg-secondary">İade</span>
-                        }
-                        else if (loan.IsOverdue)
-                        {
-                            <span class="badge text-bg-danger">Gecikmiş</span>
-                        }
-                        else
-                        {
-                            <span class="badge text-bg-primary">Ödünçte</span>
-                        }
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
+    <div class="table-panel">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Üye</th>
+                        <th>Kitap / barkod</th>
+                        <th>Teslim</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var loan in Model.RecentLoans)
+                {
+                    <tr>
+                        <td>@loan.LoanDate.ToString("dd.MM.yyyy")</td>
+                        <td>@loan.MemberName</td>
+                        <td>@loan.BookTitle <span class="text-muted">(@loan.Barcode)</span></td>
+                        <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @if (loan.ReturnDate is not null)
+                            {
+                                <span class="badge text-bg-secondary">İade</span>
+                            }
+                            else if (loan.IsOverdue)
+                            {
+                                <span class="badge text-bg-danger">Gecikmiş</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-primary">Ödünçte</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 }
