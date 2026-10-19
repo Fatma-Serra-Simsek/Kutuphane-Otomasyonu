@@ -1,0 +1,100 @@
+classDiagram
+direction TB
+
+class Book {
+  +int Id
+  +string Title
+  +string ISBN
+  +int PublishYear
+  +string Description
+  +int CategoryId
+  +int PublisherId
+  +bool IsDeleted
+  +GetAvailableCopyCount() int
+}
+
+class BookCopy {
+  +int Id
+  +string Barcode
+  +CopyStatus Status
+  +int BookId
+  +bool IsDeleted
+}
+
+class Author {
+  +int Id
+  +string FullName
+}
+
+class Publisher {
+  +int Id
+  +string Name
+}
+
+class Category {
+  +int Id
+  +string Name
+}
+
+class Member {
+  +int Id
+  +string MemberNumber
+  +string FullName
+  +string Email
+  +string Phone
+  +DateTime RegisteredAt
+  +bool IsActive
+  +CanBorrow() bool
+}
+
+class Loan {
+  +int Id
+  +DateTime LoanDate
+  +DateTime DueDate
+  +DateTime? ReturnDate
+  +int MemberId
+  +int BookCopyId
+  +int StaffId
+  +IsOverdue() bool
+}
+
+class Staff {
+  +int Id
+  +string FullName
+  +string Email
+  +Role Role
+}
+
+class Setting {
+  +string Key
+  +string Value
+}
+
+class BookAuthor {
+  +int BookId
+  +int AuthorId
+}
+
+class CopyStatus {
+  <<enumeration>>
+  Available
+  Loaned
+  Lost
+  Damaged
+}
+
+class Role {
+  <<enumeration>>
+  Admin
+  Librarian
+}
+
+Book "1" *-- "1..*" BookCopy : copies
+Book "*" -- "*" Author : authors
+Book "*" --> "1" Publisher
+Book "*" --> "1" Category
+BookCopy "1" --> "0..*" Loan
+Member "1" --> "0..*" Loan
+Staff "1" --> "0..*" Loan
+BookCopy ..> CopyStatus
+Staff ..> Role

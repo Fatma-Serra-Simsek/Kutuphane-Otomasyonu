@@ -1,0 +1,15 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Hata";
+}
+
+<h1 class="h3 text-danger">Bir hata oluştu</h1>
+<p class="text-muted">İsteğiniz işlenirken beklenmeyen bir sorun oluştu. Lütfen daha sonra tekrar deneyin.</p>
+
+@if (Model.ShowRequestId)
+{
+    <p class="small text-muted mb-0">
+        Destek için bu kodu iletebilirsiniz:
+        <code>@Model.RequestId</code>
+    </p>
+}

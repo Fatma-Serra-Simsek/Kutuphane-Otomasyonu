@@ -1,0 +1,31 @@
+@model IReadOnlyList<Library.Domain.Common.MemberBorrowStat>
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "En çok kitap alan üyeler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+    <a class="btn btn-outline-success" asp-action="ExportTopMembers">CSV indir</a>
+</div>
+<p><a asp-action="Index">Raporlara dön</a></p>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">Veri yok.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Üye</th><th>Üye no</th><th>Ödünç sayısı</th></tr></thead>
+        <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td>@row.FullName</td>
+                <td>@row.MemberNumber</td>
+                <td>@row.BorrowCount</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

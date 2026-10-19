@@ -1,0 +1,90 @@
+@model MemberDetailsViewModel
+@{
+    ViewData["Title"] = Model.Member.FullName;
+    var active = Model.Loans.Where(l => l.ReturnDate == null).ToList();
+    var past = Model.Loans.Where(l => l.ReturnDate != null).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h1 class="h3 mb-1">@Model.Member.FullName</h1>
+        <p class="text-muted mb-0">
+            @Model.Member.MemberNumber · @Model.Member.Email · @Model.Member.Phone
+            ·
+            @if (Model.Member.IsActive)
+            {
+                <span class="badge text-bg-success">Aktif</span>
+            }
+            else
+            {
+                <span class="badge text-bg-secondary">Pasif</span>
+            }
+        </p>
+        <p class="small text-muted">Kayıt: @Model.Member.RegisteredAt.ToString("dd.MM.yyyy")</p>
+    </div>
+    <div>
+        <a class="btn btn-outline-secondary" asp-action="Edit" asp-route-id="@Model.Member.Id">Düzenle</a>
+        @if (Model.Member.IsActive)
+        {
+            <form asp-action="SoftDelete" asp-route-id="@Model.Member.Id" method="post" class="d-inline"
+                  onsubmit="return confirm('Üyeyi pasife almak istiyor musunuz?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger">Pasife al</button>
+            </form>
+        }
+    </div>
+</div>
+
+<h2 class="h5">Mevcut ödünçler</h2>
+@if (active.Count == 0)
+{
+    <p class="text-muted">Aktif ödünç yok.</p>
+}
+else
+{
+    <table class="table table-sm table-striped">
+        <thead><tr><th>Kitap</th><th>Barkod</th><th>Ödünç</th><th>Teslim</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var loan in active)
+        {
+            <tr>
+                <td>@loan.BookCopy?.Book?.Title</td>
+                <td>@loan.BookCopy?.Barcode</td>
+                <td>@loan.LoanDate.ToString("dd.MM.yyyy")</td>
+                <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
+                <td>
+                    @if (loan.IsOverdue())
+                    {
+                        <span class="badge text-bg-danger">Gecikmiş</span>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<h2 class="h5 mt-4">Geçmiş</h2>
+@if (past.Count == 0)
+{
+    <p class="text-muted">Geçmiş ödünç yok.</p>
+}
+else
+{
+    <table class="table table-sm table-striped">
+        <thead><tr><th>Kitap</th><th>Barkod</th><th>Ödünç</th><th>İade</th></tr></thead>
+        <tbody>
+        @foreach (var loan in past)
+        {
+            <tr>
+                <td>@loan.BookCopy?.Book?.Title</td>
+                <td>@loan.BookCopy?.Barcode</td>
+                <td>@loan.LoanDate.ToString("dd.MM.yyyy")</td>
+                <td>@loan.ReturnDate!.Value.ToString("dd.MM.yyyy")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<p class="mt-3"><a asp-action="Index">Listeye dön</a></p>

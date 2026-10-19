@@ -1,0 +1,80 @@
+@model BookListViewModel
+@using Library.Domain.Enums
+@{
+    ViewData["Title"] = "Kitaplar";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Kitaplar</h1>
+    <a class="btn btn-primary" asp-action="Create">Yeni kitap</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input class="form-control" name="term" value="@Model.Term" placeholder="Ad, yazar veya ISBN" />
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" name="categoryId" asp-items="ViewBag.Categories"></select>
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-outline-secondary w-100">Ara</button>
+    </div>
+</form>
+
+@if (Model.Result.TotalCount == 0)
+{
+    <p class="text-muted">Kayıt bulunamadı.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Başlık</th>
+                    <th>Yazarlar</th>
+                    <th>Kategori</th>
+                    <th>Kopya</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var book in Model.Result.Items)
+            {
+                var available = book.GetAvailableCopyCount();
+                var total = book.Copies.Count(c => !c.IsDeleted);
+                <tr>
+                    <td>@book.Title</td>
+                    <td>@string.Join(", ", book.BookAuthors.Select(ba => ba.Author.FullName))</td>
+                    <td>@book.Category?.Name</td>
+                    <td>
+                        <span class="badge text-bg-@(available > 0 ? "success" : "secondary")">@available / @total müsait</span>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@book.Id">Detay</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@book.Id">Düzenle</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.Result.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @for (var p = 1; p <= Model.Result.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.Result.Page ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@p"
+                           asp-route-term="@Model.Term"
+                           asp-route-categoryId="@Model.CategoryId">@p</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

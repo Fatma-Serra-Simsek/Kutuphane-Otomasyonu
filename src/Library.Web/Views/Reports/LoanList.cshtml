@@ -1,0 +1,60 @@
+@model IReadOnlyList<Library.Business.Dtos.LoanListItemDto>
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Ödünç listesi";
+    var exportAction = ViewData["ExportAction"] as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">@ViewData["Title"]</h1>
+    @if (!string.IsNullOrEmpty(exportAction))
+    {
+        <a class="btn btn-outline-success" asp-action="@exportAction">CSV indir</a>
+    }
+</div>
+<p><a asp-action="Index">Raporlara dön</a></p>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">Veri yok.</p>
+}
+else
+{
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th>Tarih</th>
+                <th>Üye</th>
+                <th>Kitap</th>
+                <th>Barkod</th>
+                <th>Teslim</th>
+                <th>Durum</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var loan in Model)
+        {
+            <tr>
+                <td>@loan.LoanDate.ToString("dd.MM.yyyy")</td>
+                <td>@loan.MemberName</td>
+                <td>@loan.BookTitle</td>
+                <td>@loan.Barcode</td>
+                <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
+                <td>
+                    @if (loan.ReturnDate is not null)
+                    {
+                        <span class="badge text-bg-secondary">İade</span>
+                    }
+                    else if (loan.IsOverdue)
+                    {
+                        <span class="badge text-bg-danger">Gecikmiş</span>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-primary">Ödünçte</span>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

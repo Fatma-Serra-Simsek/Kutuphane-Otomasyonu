@@ -1,0 +1,16 @@
+@model MemberFormViewModel
+@{
+    ViewData["Title"] = "Üye ekle";
+}
+
+<h1 class="h3 mb-3">Üye ekle</h1>
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <partial name="_MemberFormFields" />
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">İptal</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

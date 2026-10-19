@@ -1,0 +1,46 @@
+@model IReadOnlyList<Library.Domain.Entities.Loan>
+@{
+    ViewData["Title"] = "Ödünçtekiler";
+}
+
+<h1 class="h3 mb-3">Ödünçtekiler</h1>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">Aktif ödünç yok.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Üye</th>
+                    <th>Kitap</th>
+                    <th>Barkod</th>
+                    <th>Ödünç</th>
+                    <th>Teslim</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var loan in Model)
+            {
+                <tr>
+                    <td>@loan.Member?.FullName</td>
+                    <td>@loan.BookCopy?.Book?.Title</td>
+                    <td>@loan.BookCopy?.Barcode</td>
+                    <td>@loan.LoanDate.ToString("dd.MM.yyyy")</td>
+                    <td>@loan.DueDate.ToString("dd.MM.yyyy")</td>
+                    <td>
+                        @if (loan.IsOverdue())
+                        {
+                            <span class="badge text-bg-danger">Gecikmiş</span>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

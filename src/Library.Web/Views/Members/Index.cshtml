@@ -1,0 +1,109 @@
+@model MemberListViewModel
+@{
+    ViewData["Title"] = "Üyeler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Üyeler</h1>
+    <a class="btn btn-primary" asp-action="Create">Yeni üye</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input class="form-control" name="term" value="@Model.Term" placeholder="Ad, üye no veya e-posta" />
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" name="status">
+            @if (string.IsNullOrEmpty(Model.Status))
+            {
+                <option value="" selected>Tümü</option>
+            }
+            else
+            {
+                <option value="">Tümü</option>
+            }
+            @if (Model.Status == "active")
+            {
+                <option value="active" selected>Aktif</option>
+            }
+            else
+            {
+                <option value="active">Aktif</option>
+            }
+            @if (Model.Status == "passive")
+            {
+                <option value="passive" selected>Pasif</option>
+            }
+            else
+            {
+                <option value="passive">Pasif</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-outline-secondary w-100">Ara</button>
+    </div>
+</form>
+
+@if (Model.Result.TotalCount == 0)
+{
+    <p class="text-muted">Kayıt bulunamadı.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Üye no</th>
+                    <th>Ad soyad</th>
+                    <th>E-posta</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var m in Model.Result.Items)
+            {
+                <tr>
+                    <td>@m.MemberNumber</td>
+                    <td>@m.FullName</td>
+                    <td>@m.Email</td>
+                    <td>
+                        @if (m.IsActive)
+                        {
+                            <span class="badge text-bg-success">Aktif</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-secondary">Pasif</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@m.Id">Detay</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@m.Id">Düzenle</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.Result.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination">
+                @for (var p = 1; p <= Model.Result.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.Result.Page ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@p"
+                           asp-route-term="@Model.Term"
+                           asp-route-status="@Model.Status">@p</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}

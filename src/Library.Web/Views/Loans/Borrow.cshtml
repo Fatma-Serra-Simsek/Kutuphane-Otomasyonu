@@ -1,0 +1,35 @@
+@model BorrowViewModel
+@{
+    ViewData["Title"] = "Ödünç ver";
+}
+
+<h1 class="h3 mb-3">Ödünç ver</h1>
+
+<div class="alert alert-info">
+    Ödünç süresi: <strong>@Model.LoanPeriodDays gün</strong> —
+    Tahmini teslim: <strong>@Model.PreviewDueDate.ToString("dd.MM.yyyy")</strong>
+</div>
+
+<form method="post" id="borrowForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="MemberId" class="form-label"></label>
+        <select asp-for="MemberId" class="form-select" asp-items="ViewBag.Members">
+            <option value="">Üye seçin</option>
+        </select>
+        <span asp-validation-for="MemberId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Barcode" class="form-label"></label>
+        <input asp-for="Barcode" class="form-control" autofocus autocomplete="off" />
+        <span asp-validation-for="Barcode" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Ödünç ver</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

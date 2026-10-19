@@ -1,0 +1,70 @@
+classDiagram
+direction TB
+
+class zeynep["zeynep : Staff"] {
+  FullName = Zeynep Kaya
+  Role = Librarian
+}
+
+class ali["ali : Member"] {
+  MemberNumber = M-0001
+  FullName = Ali Yilmaz
+  IsActive = true
+}
+
+class kitap1["kitap1 : Book"] {
+  Title = Kurk Mantolu Madonna
+  PublishYear = 1943
+}
+
+class kitap2["kitap2 : Book"] {
+  Title = Suc ve Ceza
+  PublishYear = 1866
+}
+
+class yazar1["yazar1 : Author"] {
+  FullName = Sabahattin Ali
+}
+
+class yazar2["yazar2 : Author"] {
+  FullName = Fyodor Dostoyevski
+}
+
+class kopya1["kopya1 : BookCopy"] {
+  Barcode = B-0001
+  Status = Loaned
+}
+
+class kopya2["kopya2 : BookCopy"] {
+  Barcode = B-0002
+  Status = Available
+}
+
+class kopya3["kopya3 : BookCopy"] {
+  Barcode = B-0101
+  Status = Loaned
+}
+
+class odunc1["odunc1 : Loan"] {
+  LoanDate = 2026-10-01
+  DueDate = 2026-10-15
+  ReturnDate = null
+}
+
+class odunc2["odunc2 : Loan"] {
+  LoanDate = 2026-10-10
+  DueDate = 2026-10-24
+  ReturnDate = null
+}
+
+kitap1 -- kopya1
+kitap1 -- kopya2
+kitap2 -- kopya3
+kitap1 -- yazar1
+kitap2 -- yazar2
+odunc1 -- ali
+odunc1 -- kopya1
+odunc1 -- zeynep
+odunc2 -- ali
+odunc2 -- kopya3
+odunc2 -- zeynep

@@ -1,0 +1,151 @@
+classDiagram
+direction TB
+
+class ILoanService {
+  <<interface>>
+  +BorrowBook(memberId, copyId, staffId) LoanResult
+  +ReturnBook(copyId) ReturnResult
+  +GetOverdueLoans() List~Loan~
+  +GetActiveLoans() List~Loan~
+}
+
+class LoanService {
+  -ILoanRepository loans
+  -IBookCopyRepository copies
+  -IMemberRepository members
+  -IUnitOfWork uow
+}
+
+class ILoanRepository {
+  <<interface>>
+  +GetActiveByCopy(copyId) Loan
+  +GetOverdue() List~Loan~
+  +Add(loan)
+}
+
+class LoanRepository
+
+class LoansController {
+  -ILoanService service
+  +Borrow() IActionResult
+  +Return() IActionResult
+}
+
+class IBookService {
+  <<interface>>
+  +Create(dto) Result
+  +Update(dto) Result
+  +SoftDelete(id) Result
+  +Search(query) PagedResult
+}
+
+class BookService {
+  -IBookRepository books
+  -IBookCopyRepository copies
+  -IUnitOfWork uow
+}
+
+class IBookRepository {
+  <<interface>>
+  +GetById(id) Book
+  +Add(book)
+  +Search(query) PagedResult
+}
+
+class BookRepository
+
+class BooksController {
+  -IBookService service
+}
+
+class IMemberService {
+  <<interface>>
+  +Create(dto) Result
+  +Update(dto) Result
+  +SoftDelete(id) Result
+  +Search(query) PagedResult
+  +GetLoans(memberId) List~Loan~
+}
+
+class MemberService {
+  -IMemberRepository members
+  -ILoanRepository loans
+  -IUnitOfWork uow
+}
+
+class IMemberRepository {
+  <<interface>>
+  +GetById(id) Member
+  +Add(member)
+  +Search(query) PagedResult
+}
+
+class MemberRepository
+
+class MembersController {
+  -IMemberService service
+}
+
+class IReportService {
+  <<interface>>
+  +MostBorrowedBooks() List
+  +TopBorrowingMembers() List
+  +ActiveLoans() List
+  +OverdueLoans() List
+  +LoansByDateRange(from, to) List
+}
+
+class ReportService {
+  -ILoanRepository loans
+  -IBookRepository books
+}
+
+class ReportsController {
+  -IReportService service
+}
+
+class IDashboardService {
+  <<interface>>
+  +GetSummary() DashboardDto
+  +GetRecentLoans(count) List
+}
+
+class DashboardService {
+  -IBookRepository books
+  -IMemberRepository members
+  -ILoanRepository loans
+}
+
+class HomeController {
+  -IDashboardService service
+}
+
+class IUnitOfWork {
+  <<interface>>
+  +SaveChangesAsync()
+  +BeginTransactionAsync()
+}
+
+ILoanService <|.. LoanService
+ILoanRepository <|.. LoanRepository
+LoanService ..> ILoanRepository
+LoanService ..> IUnitOfWork
+LoansController ..> ILoanService
+
+IBookService <|.. BookService
+IBookRepository <|.. BookRepository
+BookService ..> IBookRepository
+BookService ..> IUnitOfWork
+BooksController ..> IBookService
+
+IMemberService <|.. MemberService
+IMemberRepository <|.. MemberRepository
+MemberService ..> IMemberRepository
+MemberService ..> IUnitOfWork
+MembersController ..> IMemberService
+
+IReportService <|.. ReportService
+ReportsController ..> IReportService
+
+IDashboardService <|.. DashboardService
+HomeController ..> IDashboardService

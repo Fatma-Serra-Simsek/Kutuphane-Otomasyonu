@@ -1,0 +1,93 @@
+erDiagram
+  BOOKS ||--|{ BOOK_COPIES : has
+  BOOKS }o--|| PUBLISHERS : published_by
+  BOOKS }o--|| CATEGORIES : categorized_as
+  BOOKS ||--o{ BOOK_AUTHORS : has
+  AUTHORS ||--o{ BOOK_AUTHORS : writes
+  BOOK_COPIES ||--o{ LOANS : loaned_as
+  MEMBERS ||--o{ LOANS : borrows
+  STAFF ||--o{ LOANS : processes
+  STAFF ||--o| ASP_NET_USERS : linked
+
+  BOOKS {
+    int Id PK
+    string Title
+    string ISBN
+    int PublishYear
+    string Description
+    int CategoryId FK
+    int PublisherId FK
+    bool IsDeleted
+  }
+
+  BOOK_COPIES {
+    int Id PK
+    string Barcode UK
+    int Status
+    int BookId FK
+    bool IsDeleted
+  }
+
+  AUTHORS {
+    int Id PK
+    string FullName
+  }
+
+  BOOK_AUTHORS {
+    int BookId PK_FK
+    int AuthorId PK_FK
+  }
+
+  PUBLISHERS {
+    int Id PK
+    string Name
+  }
+
+  CATEGORIES {
+    int Id PK
+    string Name
+  }
+
+  MEMBERS {
+    int Id PK
+    string MemberNumber UK
+    string FullName
+    string Email
+    string Phone
+    datetime RegisteredAt
+    bool IsActive
+  }
+
+  LOANS {
+    int Id PK
+    datetime LoanDate
+    datetime DueDate
+    datetime ReturnDate
+    int MemberId FK
+    int BookCopyId FK
+    int StaffId FK
+  }
+
+  STAFF {
+    int Id PK
+    string FullName
+    string Email
+    int Role
+  }
+
+  SETTINGS {
+    string Key PK
+    string Value
+  }
+
+  ASP_NET_USERS {
+    string Id PK
+    string UserName
+    string PasswordHash
+    int StaffId FK
+  }
+
+  ASP_NET_ROLES {
+    string Id PK
+    string Name
+  }

@@ -1,0 +1,11 @@
+@model BookFormViewModel
+@{
+    ViewData["Title"] = "Kitap düzenle";
+}
+
+<h1 class="h3 mb-3">Kitap düzenle</h1>
+<partial name="_BookForm" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

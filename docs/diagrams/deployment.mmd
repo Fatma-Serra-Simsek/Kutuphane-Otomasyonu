@@ -1,0 +1,30 @@
+flowchart LR
+  subgraph C["device İstemci Bilgisayarı"]
+    B["Web Tarayıcı"]
+    S["Barkod Okuyucu isteğe bağlı"]
+  end
+
+  subgraph W["device Web Sunucusu"]
+    subgraph K["execution environment Kestrel / IIS"]
+      A1["Library.Web.dll"]
+      A2["Library.Business.dll"]
+      A3["Library.Domain.dll"]
+      A4["Library.Data.dll"]
+      A5["appsettings.json"]
+    end
+  end
+
+  subgraph D["device Veritabanı Sunucusu"]
+    subgraph Q["execution environment SQL Server"]
+      DB[("LibraryDB")]
+    end
+  end
+
+  subgraph Y["device Yedekleme Deposu isteğe bağlı"]
+    BK["gece yedekleri .bak"]
+  end
+
+  S --> B
+  B -- "HTTPS 443" --> A1
+  A4 -- "TCP/IP 1433 EF Core / TDS" --> DB
+  DB -. "zamanlanmış yedek" .-> BK

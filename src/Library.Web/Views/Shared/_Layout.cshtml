@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Kütüphane Yönetim Sistemi</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Library.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <partial name="_Toast" />
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Kütüphane Yönetim Sistemi</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Menüyü aç/kapat">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Ana panel</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Books" asp-action="Index">Kitaplar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Members" asp-action="Index">Üyeler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Loans" asp-action="Borrow">Ödünç</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Loans" asp-action="Return">İade</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Loans" asp-action="Active">Ödünçtekiler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Loans" asp-action="Overdue">Gecikmişler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Reports" asp-action="Index">Raporlar</a>
+                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Settings" asp-action="Index">Ayarlar</a>
+                                </li>
+                            }
+                        </ul>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <span class="navbar-text text-white-50 me-2">@User.Identity?.Name</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-light btn-sm">Çıkış</button>
+                                </form>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; @DateTime.Now.Year - Kütüphane Yönetim Sistemi
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
